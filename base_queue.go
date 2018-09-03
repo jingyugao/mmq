@@ -51,3 +51,15 @@ func (bq *BaseQueue) Consume() (msg string, err error) {
 
 	return
 }
+
+func (bq *BaseQueue) BConsume() (msg string, err error) {
+	rc := RedisConnPool.Get()
+	defer rc.Close()
+
+	msg, err = redis.String(rc.Do("BRPOP", bq.Name))
+	if err != nil {
+		clog.Error(" Put msg err: %v, %v ,%v", err, msg)
+	}
+
+	return
+}

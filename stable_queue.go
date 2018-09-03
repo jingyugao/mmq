@@ -1,6 +1,10 @@
 package mmq
 
-import "github.com/garyburd/redigo/redis"
+import (
+	"encoding/json"
+
+	"github.com/garyburd/redigo/redis"
+)
 
 type StableQueue struct {
 	P *BaseQueue
@@ -22,20 +26,34 @@ func NewStableQueue(name string) (sq *StableQueue, err error) {
 	return
 }
 
-func (sq *StableQueue) Put(msg string) (err error) {
+func (sq *StableQueue) Put(msg Msg) (err error) {
 	rc := RedisConnPool.Get()
 	defer rc.Close()
+	msgRaw, err := json.Marshal(msg)
+	if err != nil {
+		return
+	}
 
-	err = sq.P.Put(msg)
-
+	err = sq.P.Put(string(msgRaw))
 	return
 }
 
-func (sq *StableQueue) Consume() (msg string, err error) {
+func (sq *StableQueue) Consume() (msg Msg, err error) {
 	rc := RedisConnPool.Get()
 	defer rc.Close()
 
-	msg, err = redis.String(rc.Do("RPOPLPUSH", sq.P.Name, sq.W.Name))
+	msgRaw, err := redis.Bytes(rc.Do("RPOPLPUSH", sq.P.Name, sq.W.Name))
+
+	err = json.Unmarshal(msgRaw, msg)
+	return
+}
+
+func (sq *StableQueue) ACK(ID MsgID) (msg string, err error) {
+	rc := RedisConnPool.Get()
+	defer rc.Close()
+
+	// msg, err = redis.String(rc.Do("RPOPLPUSH", sq.P.Name, sq.W.Name))
+	// lua remove
 
 	return
 }

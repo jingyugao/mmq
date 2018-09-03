@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/jingyugao/mmq"
+	mmq "github.com/jingyugao/mmq"
 )
 
 func PutTest(t *testing.T) {
+
 	q, err := mmq.NewQueue("qTest")
 	if err != nil {
 		t.Error(err)
@@ -23,6 +24,22 @@ func PutTest(t *testing.T) {
 }
 
 func ConsumeTest(t *testing.T) {
+	q, err := mmq.NewQueue("qTest")
+
+	if err != nil {
+		t.Error(err)
+	}
+	for i := 0; i < 100; i++ {
+		msg, err := q.Consume()
+		if err != nil {
+			t.Error(err)
+		} else {
+			t.Logf("consume msg :%s", msg)
+		}
+	}
+}
+
+func BConsumeTest(t *testing.T) {
 	q, err := mmq.NewQueue("qTest")
 
 	if err != nil {
