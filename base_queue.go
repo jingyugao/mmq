@@ -1,6 +1,10 @@
 package mmq
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
 	"github.com/garyburd/redigo/redis"
 	"github.com/simplejia/clog"
 )
@@ -52,14 +56,21 @@ func (bq *BaseQueue) Consume() (msg string, err error) {
 	return
 }
 
-func (bq *BaseQueue) BConsume() (msg string, err error) {
+func (bq *BaseQueue) BConsume(tout time.Duration) (msg string, err error) {
 	rc := RedisConnPool.Get()
 	defer rc.Close()
 
-	msg, err = redis.String(rc.Do("BRPOP", bq.Name))
+	rep, err := redis.Strings(rc.Do("BRPOP", bq.Name, tout))
 	if err != nil {
 		clog.Error(" Put msg err: %v, %v ,%v", err, msg)
+
+		if strings.LastIndexAny(err.Error(), "nil returned") != -1 {
+			return "", fmt.Errorf("timeout")
+		} else {
+			return "", err
+		}
 	}
+	msg = rep[1]
 
 	return
 }

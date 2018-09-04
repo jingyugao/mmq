@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	q, err := mmq.NewQueue("qTest")
+	q, err := mmq.NewBaseQueue("qTest")
 
 	if err != nil {
 		panic(err)

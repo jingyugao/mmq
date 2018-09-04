@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	mmq "github.com/jingyugao/mmq"
+	"github.com/jingyugao/mmq"
 )
 
-func PutTest(t *testing.T) {
+func TestPut(t *testing.T) {
 
-	q, err := mmq.NewQueue("qTest")
+	q, err := mmq.NewBaseQueue("qTest")
 	if err != nil {
 		t.Error(err)
 	}
@@ -23,8 +23,8 @@ func PutTest(t *testing.T) {
 	}
 }
 
-func ConsumeTest(t *testing.T) {
-	q, err := mmq.NewQueue("qTest")
+func TestConsume(t *testing.T) {
+	q, err := mmq.NewBaseQueue("qTest")
 
 	if err != nil {
 		t.Error(err)
@@ -39,14 +39,14 @@ func ConsumeTest(t *testing.T) {
 	}
 }
 
-func BConsumeTest(t *testing.T) {
-	q, err := mmq.NewQueue("qTest")
+func TestBConsume(t *testing.T) {
+	q, err := mmq.NewBaseQueue("qTest")
 
 	if err != nil {
 		t.Error(err)
 	}
 	for i := 0; i < 100; i++ {
-		msg, err := q.Consume()
+		msg, err := q.BConsume(10)
 		if err != nil {
 			t.Error(err)
 		} else {

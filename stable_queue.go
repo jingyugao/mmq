@@ -2,6 +2,7 @@ package mmq
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -48,12 +49,21 @@ func (sq *StableQueue) Consume() (msg Msg, err error) {
 	return
 }
 
-func (sq *StableQueue) ACK(ID MsgID) (msg string, err error) {
+func (sq *StableQueue) ACK(msg Msg) (err error) {
 	rc := RedisConnPool.Get()
 	defer rc.Close()
 
-	// msg, err = redis.String(rc.Do("RPOPLPUSH", sq.P.Name, sq.W.Name))
-	// lua remove
-
+	msgRaw, err := json.Marshal(msg)
+	if err != nil {
+		return
+	}
+	//ret, err := redis.Int(rc.Do("eval \"redis.call('lrem',KEYS[1],1,ARGV[1])\"", 1, "l1", "v1"))
+	ret, err := redis.Int(rc.Do("lrem", sq.W.Name, msgRaw))
+	if err != nil {
+		return
+	}
+	if ret == 0 {
+		err = fmt.Errorf("has ACKed")
+	}
 	return
 }
