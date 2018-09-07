@@ -3,13 +3,16 @@ package mmq
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 )
 
 type StableQueue struct {
-	P *BaseQueue
-	W *BaseQueue
+	P              *BaseQueue
+	W              *BaseQueue
+	resendInterval time.Duration
+	exitChan       *chan int
 }
 
 func NewStableQueue(name string) (sq *StableQueue, err error) {
@@ -59,6 +62,7 @@ func (sq *StableQueue) ACK(msg Msg) (err error) {
 	}
 	//ret, err := redis.Int(rc.Do("eval \"redis.call('lrem',KEYS[1],1,ARGV[1])\"", 1, "l1", "v1"))
 	ret, err := redis.Int(rc.Do("lrem", sq.W.Name, msgRaw))
+
 	if err != nil {
 		return
 	}
@@ -66,4 +70,18 @@ func (sq *StableQueue) ACK(msg Msg) (err error) {
 		err = fmt.Errorf("has ACKed")
 	}
 	return
+}
+
+func reSendLoop(sq *StableQueue) {
+	//重新投递
+	for {
+		select {
+		case <-time.Tick(time.Second):
+
+		}
+	}
+}
+
+func init() {
+
 }
