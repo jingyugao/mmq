@@ -48,7 +48,7 @@ func (sq *StableQueue) Consume() (msg Msg, err error) {
 
 	msgRaw, err := redis.Bytes(rc.Do("RPOPLPUSH", sq.P.Name, sq.W.Name))
 
-	err = json.Unmarshal(msgRaw, msg)
+	err = json.Unmarshal(msgRaw, &msg)
 	return
 }
 
@@ -73,10 +73,14 @@ func (sq *StableQueue) ACK(msg Msg) (err error) {
 }
 
 func reSendLoop(sq *StableQueue) {
+	rc := RedisConnPool.Get()
+	defer rc.Close()
+
 	//重新投递
 	for {
 		select {
 		case <-time.Tick(time.Second):
+			rc.Do("EVAL", "local json = redis.call('GET', KEYS[1]) local obj = cjson.decode(json) return obj['hotelId']")
 
 		}
 	}
