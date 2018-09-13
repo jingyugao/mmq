@@ -12,7 +12,7 @@ type StableQueue struct {
 	P              *BaseQueue
 	W              *BaseQueue
 	resendInterval time.Duration
-	exitChan       *chan int
+	exitChan       chan int
 }
 
 func NewStableQueue(name string) (sq *StableQueue, err error) {
