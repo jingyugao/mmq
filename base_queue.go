@@ -50,7 +50,7 @@ func (bq *BaseQueue) Consume() (msg string, err error) {
 
 	msg, err = redis.String(rc.Do("RPOP", bq.Name))
 	if err != nil {
-		clog.Error(" Put msg err: %v, %v ,%v", err, msg)
+		clog.Error(" Put msg err: %v, %v ,%v", err, msg, bq.Name)
 	}
 
 	return
@@ -62,7 +62,7 @@ func (bq *BaseQueue) BConsume(tout time.Duration) (msg string, err error) {
 
 	rep, err := redis.Strings(rc.Do("BRPOP", bq.Name, tout))
 	if err != nil {
-		clog.Error(" Put msg err: %v, %v ,%v", err, msg)
+		clog.Error(" Put msg err: %v, %v ,%v", err, msg, bq.Name)
 
 		if strings.LastIndexAny(err.Error(), "nil returned") != -1 {
 			return "", fmt.Errorf("timeout")

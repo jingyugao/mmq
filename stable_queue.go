@@ -61,7 +61,7 @@ func (sq *StableQueue) ACK(msg Msg) (err error) {
 		return
 	}
 	//ret, err := redis.Int(rc.Do("eval \"redis.call('lrem',KEYS[1],1,ARGV[1])\"", 1, "l1", "v1"))
-	ret, err := redis.Int(rc.Do("lrem", sq.W.Name, msgRaw))
+	ret, err := redis.Int(rc.Do("LREM", sq.W.Name, 1, msgRaw))
 
 	if err != nil {
 		return
@@ -80,8 +80,7 @@ func reSendLoop(sq *StableQueue) {
 	for {
 		select {
 		case <-time.Tick(time.Second):
-			rc.Do("EVAL", "local json = redis.call('GET', KEYS[1]) local obj = cjson.decode(json) return obj['hotelId']")
-
+			rc.Do("EVAL", resend, 1, sq.W.Name)
 		}
 	}
 }
