@@ -15,10 +15,10 @@ type BaseQueue struct {
 
 func NewBaseQueue(name string) (bq *BaseQueue, err error) {
 
-	rc := RedisConnPool.Get()
-	defer rc.Close()
+	c := RedisConnPool.Get()
+	defer c.Close()
 	name = GetQueueKey(name)
-	ret, err := redis.Int(rc.Do("SADD", GetQueueSetKey(), name))
+	ret, err := redis.Int(c.Do("SADD", GetQueueSetKey(), name))
 	if err != nil {
 		clog.Error(" Create BaseQueue err: %v, %v", err, ret)
 		return
@@ -33,10 +33,10 @@ func NewBaseQueue(name string) (bq *BaseQueue, err error) {
 }
 
 func (bq *BaseQueue) Put(msg string) (err error) {
-	rc := RedisConnPool.Get()
-	defer rc.Close()
+	c := RedisConnPool.Get()
+	defer c.Close()
 
-	ret, err := redis.Int(rc.Do("LPUSH", bq.Name, msg))
+	ret, err := redis.Int(c.Do("LPUSH", bq.Name, msg))
 	if err != nil || ret != 1 {
 		clog.Error(" Put msg err: %v, %v ,%v", err, ret, msg)
 	}
@@ -45,10 +45,10 @@ func (bq *BaseQueue) Put(msg string) (err error) {
 }
 
 func (bq *BaseQueue) Consume() (msg string, err error) {
-	rc := RedisConnPool.Get()
-	defer rc.Close()
+	c := RedisConnPool.Get()
+	defer c.Close()
 
-	msg, err = redis.String(rc.Do("RPOP", bq.Name))
+	msg, err = redis.String(c.Do("RPOP", bq.Name))
 	if err != nil {
 		clog.Error(" Put msg err: %v, %v ,%v", err, msg, bq.Name)
 	}
@@ -57,10 +57,10 @@ func (bq *BaseQueue) Consume() (msg string, err error) {
 }
 
 func (bq *BaseQueue) BConsume(tout time.Duration) (msg string, err error) {
-	rc := RedisConnPool.Get()
-	defer rc.Close()
+	c := RedisConnPool.Get()
+	defer c.Close()
 
-	rep, err := redis.Strings(rc.Do("BRPOP", bq.Name, tout))
+	rep, err := redis.Strings(c.Do("BRPOP", bq.Name, tout))
 	if err != nil {
 		clog.Error(" Put msg err: %v, %v ,%v", err, msg, bq.Name)
 
