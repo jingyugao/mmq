@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"code.yunzhanghu.com/be/kit/log"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -20,11 +19,11 @@ func NewBaseQueue(name string) (bq *BaseQueue, err error) {
 	name = GetQueueKey(name)
 	ret, err := redis.Int(c.Do("SADD", GetQueueSetKey(), name))
 	if err != nil {
-		log.Errorf(" Create BaseQueue err: %v, %v", err, ret)
+		//log.Errorf(" Create BaseQueue err: %v, %v", err, ret)
 		return
 	}
 	if ret == 0 {
-		log.Infof(" BaseQueue exists : %s", name)
+		//log.Infof(" BaseQueue exists : %s", name)
 	}
 
 	bq = &BaseQueue{Name: name}
@@ -38,7 +37,7 @@ func (bq *BaseQueue) Put(msg string) (err error) {
 
 	ret, err := redis.Int(c.Do("LPUSH", bq.Name, msg))
 	if err != nil || ret != 1 {
-		log.Errorf(" Put msg err: %v, %v ,%v", err, ret, msg)
+		//log.Errorf(" Put msg err: %v, %v ,%v", err, ret, msg)
 	}
 
 	return
@@ -50,7 +49,7 @@ func (bq *BaseQueue) Consume() (msg string, err error) {
 
 	msg, err = redis.String(c.Do("RPOP", bq.Name))
 	if err != nil {
-		log.Errorf(" Put msg err: %v, %v ,%v", err, msg, bq.Name)
+		//log.Errorf(" Put msg err: %v, %v ,%v", err, msg, bq.Name)
 	}
 
 	return
@@ -62,13 +61,13 @@ func (bq *BaseQueue) BConsume(tout time.Duration) (msg string, err error) {
 
 	rep, err := redis.Strings(c.Do("BRPOP", bq.Name, tout))
 	if err != nil {
-		log.Errorf(" Put msg err: %v, %v ,%v", err, msg, bq.Name)
+		//log.Errorf(" Put msg err: %v, %v ,%v", err, msg, bq.Name)
 
 		if strings.LastIndexAny(err.Error(), "nil returned") != -1 {
 			return "", fmt.Errorf("timeout")
-		} else {
-			return "", err
 		}
+
+		return "", err
 	}
 	msg = rep[1]
 
